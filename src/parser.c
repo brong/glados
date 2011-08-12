@@ -5,7 +5,7 @@
  *  Author: Samuel Wejeus (wejeus@kth.se)
  */
 
-#include "Parser.h"
+#include "parser.h"
 
 /*
  * For info on fgets(..) see https://buildsecurityin.us-cert.gov/bsi/articles/knowledge/coding/300-BSI.html
@@ -79,7 +79,9 @@ char *get_line() {
  * was successful the number of tokens is returned otherwise
  * -1 is returned. */
 /* BROKEN CANT NOT REALLOC */
-int tokenize(const char *string, char **argv[]) {
+int tokenize(const char *string, char **argvp[]) {
+
+	char **argv = *argvp;
 
 	/* Preliminary test if we actually received a string that contains
 	 * *something* (maybe \0) to work with */
@@ -102,10 +104,8 @@ int tokenize(const char *string, char **argv[]) {
 
 	char *cur_token;
 	/* also splits, and returns, even if next char is DELIMITER. Loop to get next */
-	while(cur_token = strsep(&input,DELIMITER)) {
-		if(DEBUG_TOKEN) printf("CUR: %s\n", cur_token);
-		if(*cur_token != NULL) break;
-	}
+	cur_token = strsep(&input,DELIMITER);
+	if(DEBUG_TOKEN) printf("CUR: %s\n", cur_token);
 
 
 	while (cur_token != NULL) {
@@ -113,7 +113,7 @@ int tokenize(const char *string, char **argv[]) {
 
 		if(DEBUG_TOKEN) printf("(tokenizer-while, before REalloc) &p: %p, p: %p, *p: %p\n", &argv, argv, *argv);
 		/* Reallocates the size of the array to make it equal to the number of tokens found so far */
-		*argv = realloc(argv, (argc)*sizeof(char**)); //on first run this will allocate the same amount as first malloc()
+		argv = realloc(argv, (argc)*sizeof(char**)); //on first run this will allocate the same amount as first malloc()
 		if(argv == NULL){
 			fprintf(stderr, "out of memory with %d elements\n", argc);
 			exit(1);
@@ -135,10 +135,8 @@ int tokenize(const char *string, char **argv[]) {
 		strcpy(argv[(argc-1)], cur_token);
 
 		/* also splits, and returns, even if next char is DELIMITER. Loop to get next */
-		while(cur_token = strsep(&input, DELIMITER)) {
-			if(DEBUG_TOKEN) printf("CUR: %s\n", cur_token);
-			if(*cur_token != NULL) break;
-		}
+		cur_token = strsep(&input, DELIMITER);
+		if(DEBUG_TOKEN) printf("CUR: %s\n", cur_token);
 		/* increase number of tokens found */
 		argc++;
 	}
@@ -154,6 +152,8 @@ int tokenize(const char *string, char **argv[]) {
 			printf("(before return) argv[%d] %s with adress: %p\n", i, argv[i], &argv[i]);
 		}
 	}
+
+	*argvp = argv;
 
 	return argc;
 }

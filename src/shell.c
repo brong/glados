@@ -12,7 +12,7 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 
-#include "Parser.h"
+#include "parser.h"
 
 #define TYPE_FG 0
 #define TYPE_BG 1
